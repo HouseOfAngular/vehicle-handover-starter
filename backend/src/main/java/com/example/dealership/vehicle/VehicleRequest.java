@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record VehicleRequest(
-        @NotNull
+        @NotBlank
         @Pattern(regexp = "[A-HJ-NPR-Z0-9]{17}", message = "must be 17 characters: digits and capital letters except I, O, Q")
         String vin,
 
@@ -23,6 +23,9 @@ public record VehicleRequest(
         @NotNull
         @ProductionYear
         Integer productionYear,
+
+        @NotNull
+        FuelType fuelType,
 
         LocalDate plannedHandoverDate
 ) {

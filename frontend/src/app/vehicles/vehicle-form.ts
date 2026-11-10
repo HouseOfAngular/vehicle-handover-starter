@@ -1,29 +1,25 @@
-import { Component, computed, inject, input, linkedSignal } from '@angular/core';
-import {
-  FormField,
-  FormRoot,
-  form,
-  max,
-  maxLength,
-  min,
-  pattern,
-  required,
-} from '@angular/forms/signals';
+import { Component, computed, inject, input, linkedSignal, numberAttribute } from '@angular/core';
+import { FormField, FormRoot, form, required } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
-import { problemDetailToFormErrors } from '../shared/problem-detail';
-import { Vehicle, VehicleApi, VehicleRequest } from './vehicle-api';
+import { loadErrorMessage, problemDetailToFormErrors } from '../shared/problem-detail';
+import {
+  FUEL_TYPES,
+  FUEL_TYPE_LABELS,
+  FuelType,
+  Vehicle,
+  VehicleApi,
+  VehicleRequest,
+} from './vehicle-api';
 
 interface VehicleFormModel {
   vin: string;
   make: string;
   model: string;
   productionYear: number | null;
+  fuelType: FuelType | '';
   plannedHandoverDate: string;
 }
-
-const MIN_PRODUCTION_YEAR = 1990;
-const MAX_PRODUCTION_YEAR = new Date().getFullYear() + 1;
 
 function toFormModel(vehicle: Vehicle | undefined): VehicleFormModel {
   return {
@@ -31,6 +27,7 @@ function toFormModel(vehicle: Vehicle | undefined): VehicleFormModel {
     make: vehicle?.make ?? '',
     model: vehicle?.model ?? '',
     productionYear: vehicle?.productionYear ?? null,
+    fuelType: vehicle?.fuelType ?? '',
     plannedHandoverDate: vehicle?.plannedHandoverDate ?? '',
   };
 }
@@ -41,6 +38,7 @@ function toRequest(model: VehicleFormModel): VehicleRequest {
     make: model.make,
     model: model.model,
     productionYear: model.productionYear!,
+    fuelType: model.fuelType as FuelType,
     plannedHandoverDate: model.plannedHandoverDate || null,
   };
 }
@@ -55,32 +53,27 @@ export class VehicleForm {
   private readonly router = inject(Router);
 
   readonly id = input(undefined, {
-    transform: (value: string | undefined) => (value === undefined ? undefined : Number(value)),
+    transform: (value: string | undefined) =>
+      value === undefined ? undefined : numberAttribute(value),
   });
 
   protected readonly isEdit = computed(() => this.id() !== undefined);
   protected readonly vehicle = this.vehicleApi.get(this.id);
+  protected readonly fuelTypes = FUEL_TYPES;
+  protected readonly fuelTypeLabels = FUEL_TYPE_LABELS;
 
-  private readonly model = linkedSignal(() => toFormModel(this.vehicle.value()));
+  private readonly model = linkedSignal(() =>
+    toFormModel(this.vehicle.hasValue() ? this.vehicle.value() : undefined),
+  );
 
   protected readonly vehicleForm = form(
     this.model,
     (path) => {
       required(path.vin, { message: 'VIN is required' });
-      pattern(path.vin, /^[A-HJ-NPR-Z0-9]{17}$/, {
-        message: 'VIN must be 17 characters: digits and capital letters except I, O, Q',
-      });
       required(path.make, { message: 'Make is required' });
-      maxLength(path.make, 50, { message: 'Make must be at most 50 characters' });
       required(path.model, { message: 'Model is required' });
-      maxLength(path.model, 50, { message: 'Model must be at most 50 characters' });
       required(path.productionYear, { message: 'Production year is required' });
-      min(path.productionYear, MIN_PRODUCTION_YEAR, {
-        message: `Production year must be ${MIN_PRODUCTION_YEAR} or later`,
-      });
-      max(path.productionYear, MAX_PRODUCTION_YEAR, {
-        message: `Production year must be ${MAX_PRODUCTION_YEAR} or earlier`,
-      });
+      required(path.fuelType, { message: 'Fuel type is required' });
     },
     {
       submission: {
@@ -102,4 +95,8 @@ export class VehicleForm {
       },
     },
   );
+
+  protected loadError(error: unknown): string {
+    return loadErrorMessage(error, 'Vehicle not found');
+  }
 }

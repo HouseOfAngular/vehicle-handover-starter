@@ -1,6 +1,7 @@
 import { Component, inject, input, numberAttribute } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { VehicleApi } from './vehicle-api';
+import { loadErrorMessage } from '../shared/problem-detail';
+import { FUEL_TYPE_LABELS, VehicleApi } from './vehicle-api';
 
 @Component({
   selector: 'app-vehicle-detail',
@@ -13,4 +14,9 @@ export class VehicleDetail {
   readonly id = input.required({ transform: numberAttribute });
 
   protected readonly vehicle = this.vehicleApi.get(this.id);
+  protected readonly fuelTypeLabels = FUEL_TYPE_LABELS;
+
+  protected loadError(error: unknown): string {
+    return loadErrorMessage(error, 'Vehicle not found');
+  }
 }

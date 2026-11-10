@@ -2,8 +2,8 @@
 
 @if (vehicle.isLoading()) {
   <p>Loading…</p>
-} @else if (vehicle.error()) {
-  <p class="error" role="alert">Could not load the vehicle.</p>
+} @else if (vehicle.error(); as error) {
+  <p class="error" role="alert">{{ loadError(error) }}</p>
 } @else {
   <form [formRoot]="vehicleForm">
     @for (error of vehicleForm().errors(); track error) {
@@ -16,7 +16,7 @@
     </label>
     @if (vehicleForm.vin().touched()) {
       @for (error of vehicleForm.vin().errors(); track error) {
-        <p class="error">{{ error.message }}</p>
+        <p class="error" role="alert">{{ error.message }}</p>
       }
     }
 
@@ -26,7 +26,7 @@
     </label>
     @if (vehicleForm.make().touched()) {
       @for (error of vehicleForm.make().errors(); track error) {
-        <p class="error">{{ error.message }}</p>
+        <p class="error" role="alert">{{ error.message }}</p>
       }
     }
 
@@ -36,7 +36,7 @@
     </label>
     @if (vehicleForm.model().touched()) {
       @for (error of vehicleForm.model().errors(); track error) {
-        <p class="error">{{ error.message }}</p>
+        <p class="error" role="alert">{{ error.message }}</p>
       }
     }
 
@@ -46,7 +46,22 @@
     </label>
     @if (vehicleForm.productionYear().touched()) {
       @for (error of vehicleForm.productionYear().errors(); track error) {
-        <p class="error">{{ error.message }}</p>
+        <p class="error" role="alert">{{ error.message }}</p>
+      }
+    }
+
+    <label>
+      Fuel type
+      <select [formField]="vehicleForm.fuelType">
+        <option value="">Select fuel type</option>
+        @for (fuelType of fuelTypes; track fuelType) {
+          <option [value]="fuelType">{{ fuelTypeLabels[fuelType] }}</option>
+        }
+      </select>
+    </label>
+    @if (vehicleForm.fuelType().touched()) {
+      @for (error of vehicleForm.fuelType().errors(); track error) {
+        <p class="error" role="alert">{{ error.message }}</p>
       }
     }
 
@@ -56,7 +71,7 @@
     </label>
     @if (vehicleForm.plannedHandoverDate().touched()) {
       @for (error of vehicleForm.plannedHandoverDate().errors(); track error) {
-        <p class="error">{{ error.message }}</p>
+        <p class="error" role="alert">{{ error.message }}</p>
       }
     }
 

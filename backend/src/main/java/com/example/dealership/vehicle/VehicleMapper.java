@@ -11,6 +11,7 @@ public final class VehicleMapper {
                 request.make(),
                 request.model(),
                 request.productionYear(),
+                request.fuelType(),
                 request.plannedHandoverDate());
     }
 
@@ -19,6 +20,7 @@ public final class VehicleMapper {
         vehicle.setMake(request.make());
         vehicle.setModel(request.model());
         vehicle.setProductionYear(request.productionYear());
+        vehicle.setFuelType(request.fuelType());
         vehicle.setPlannedHandoverDate(request.plannedHandoverDate());
     }
 
@@ -29,6 +31,7 @@ public final class VehicleMapper {
                 vehicle.getMake(),
                 vehicle.getModel(),
                 vehicle.getProductionYear(),
+                vehicle.getFuelType(),
                 vehicle.getPlannedHandoverDate());
     }
 }

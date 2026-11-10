@@ -1,5 +1,6 @@
 package com.example.dealership.vehicle;
 
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -25,6 +26,7 @@ import com.example.dealership.error.NotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -39,6 +41,7 @@ class VehicleControllerTest {
               "make": "Volkswagen",
               "model": "Golf",
               "productionYear": 2025,
+              "fuelType": "PETROL",
               "plannedHandoverDate": "2026-12-15"
             }
             """;
@@ -58,6 +61,7 @@ class VehicleControllerTest {
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].id").value(1))
                 .andExpect(jsonPath("$[0].vin").value(VIN))
+                .andExpect(jsonPath("$[0].fuelType").value("PETROL"))
                 .andExpect(jsonPath("$[0].plannedHandoverDate").value("2026-12-15"));
     }
 
@@ -87,22 +91,13 @@ class VehicleControllerTest {
 
         mockMvc.perform(post("/api/vehicles").contentType(MediaType.APPLICATION_JSON).content(VALID_BODY))
                 .andExpect(status().isCreated())
-                .andExpect(header().string("Location", "/api/vehicles/1"))
+                .andExpect(header().string("Location", "http://localhost/api/vehicles/1"))
                 .andExpect(jsonPath("$.id").value(1));
     }
 
     @Test
     void createReturnsBadRequestProblemWithFieldErrorsWhenRequestIsInvalid() throws Exception {
-        String body = """
-                {
-                  "vin": "TOO-SHORT",
-                  "make": "",
-                  "model": "Golf",
-                  "productionYear": %d
-                }
-                """.formatted(Year.now().getValue() + 2);
-
-        mockMvc.perform(post("/api/vehicles").contentType(MediaType.APPLICATION_JSON).content(body))
+        mockMvc.perform(post("/api/vehicles").contentType(MediaType.APPLICATION_JSON).content(invalidBody()))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.status").value(400))
@@ -113,6 +108,44 @@ class VehicleControllerTest {
                 .andExpect(jsonPath("$.errors[1].field").value("productionYear"))
                 .andExpect(jsonPath("$.errors[1].message").value("must be between 1990 and next year"))
                 .andExpect(jsonPath("$.errors[2].field").value("vin"));
+        verifyNoInteractions(vehicleService);
+    }
+
+    @Test
+    void createReturnsBadRequestProblemWithFieldErrorWhenFuelTypeIsUnknown() throws Exception {
+        String body = VALID_BODY.replace("PETROL", "STEAM");
+
+        mockMvc.perform(post("/api/vehicles").contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.detail").value("Validation failed"))
+                .andExpect(jsonPath("$.errors.length()").value(1))
+                .andExpect(jsonPath("$.errors[0].field").value("fuelType"))
+                .andExpect(jsonPath("$.errors[0].message").value("must be one of: PETROL, DIESEL, HYBRID, ELECTRIC"));
+        verifyNoInteractions(vehicleService);
+    }
+
+    @Test
+    void createReturnsBadRequestProblemWithFieldErrorWhenValueHasWrongType() throws Exception {
+        String body = VALID_BODY.replace("2025", "\"last year\"");
+
+        mockMvc.perform(post("/api/vehicles").contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.length()").value(1))
+                .andExpect(jsonPath("$.errors[0].field").value("productionYear"))
+                .andExpect(jsonPath("$.errors[0].message").value("has an invalid value"));
+        verifyNoInteractions(vehicleService);
+    }
+
+    @Test
+    void createReturnsBadRequestProblemWhenBodyIsNotJson() throws Exception {
+        mockMvc.perform(post("/api/vehicles").contentType(MediaType.APPLICATION_JSON).content("{ not json"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.detail").value("Validation failed"))
+                .andExpect(jsonPath("$.errors.length()").value(1))
+                .andExpect(jsonPath("$.errors[0].field").value(nullValue()))
+                .andExpect(jsonPath("$.errors[0].message").value("request body must be valid JSON"));
         verifyNoInteractions(vehicleService);
     }
 
@@ -129,12 +162,50 @@ class VehicleControllerTest {
     }
 
     @Test
+    void createReturnsConflictProblemWhenDatabaseConstraintIsViolated() throws Exception {
+        when(vehicleService.create(any(VehicleRequest.class)))
+                .thenThrow(new DataIntegrityViolationException("uq_vehicle_vin"));
+
+        mockMvc.perform(post("/api/vehicles").contentType(MediaType.APPLICATION_JSON).content(VALID_BODY))
+                .andExpect(status().isConflict())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.detail").value("Request conflicts with existing data"));
+    }
+
+    @Test
     void updateReturnsUpdatedVehicle() throws Exception {
         when(vehicleService.update(eq(1L), any(VehicleRequest.class))).thenReturn(response());
 
         mockMvc.perform(put("/api/vehicles/1").contentType(MediaType.APPLICATION_JSON).content(VALID_BODY))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.vin").value(VIN));
+    }
+
+    @Test
+    void updateReturnsBadRequestProblemWithFieldErrorsWhenRequestIsInvalid() throws Exception {
+        mockMvc.perform(put("/api/vehicles/1").contentType(MediaType.APPLICATION_JSON).content(invalidBody()))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.detail").value("Validation failed"))
+                .andExpect(jsonPath("$.errors.length()").value(3))
+                .andExpect(jsonPath("$.errors[0].field").value("make"))
+                .andExpect(jsonPath("$.errors[1].field").value("productionYear"))
+                .andExpect(jsonPath("$.errors[2].field").value("vin"));
+        verifyNoInteractions(vehicleService);
+    }
+
+    @Test
+    void updateReturnsConflictProblemWhenVinAlreadyExists() throws Exception {
+        when(vehicleService.update(eq(1L), any(VehicleRequest.class)))
+                .thenThrow(new ConflictException("Vehicle with VIN " + VIN + " already exists"));
+
+        mockMvc.perform(put("/api/vehicles/1").contentType(MediaType.APPLICATION_JSON).content(VALID_BODY))
+                .andExpect(status().isConflict())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.detail").value("Vehicle with VIN " + VIN + " already exists"));
     }
 
     @Test
@@ -154,7 +225,20 @@ class VehicleControllerTest {
                 .andExpect(jsonPath("$.status").value(404));
     }
 
+    private static String invalidBody() {
+        return """
+                {
+                  "vin": "TOO-SHORT",
+                  "make": "",
+                  "model": "Golf",
+                  "productionYear": %d,
+                  "fuelType": "PETROL"
+                }
+                """.formatted(Year.now().getValue() + 2);
+    }
+
     private static VehicleResponse response() {
-        return new VehicleResponse(1L, VIN, "Volkswagen", "Golf", 2025, LocalDate.of(2026, 12, 15));
+        return new VehicleResponse(
+                1L, VIN, "Volkswagen", "Golf", 2025, FuelType.PETROL, LocalDate.of(2026, 12, 15));
     }
 }

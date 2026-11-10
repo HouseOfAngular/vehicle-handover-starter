@@ -4,7 +4,8 @@
   "scripts": {
     "start": "ng serve",
     "build": "ng build",
-    "test": "ng test --watch=false"
+    "test": "ng test --watch=false",
+    "format": "prettier --write \"src/**/*.{ts,html,css}\""
   },
   "private": true,
   "packageManager": "npm@10.9.9",

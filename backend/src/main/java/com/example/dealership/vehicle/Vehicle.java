@@ -4,6 +4,8 @@ import java.time.LocalDate;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -29,16 +31,22 @@ public class Vehicle {
     @Column(nullable = false)
     private Integer productionYear;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private FuelType fuelType;
+
     private LocalDate plannedHandoverDate;
 
     protected Vehicle() {
     }
 
-    public Vehicle(String vin, String make, String model, Integer productionYear, LocalDate plannedHandoverDate) {
+    public Vehicle(String vin, String make, String model, Integer productionYear, FuelType fuelType,
+            LocalDate plannedHandoverDate) {
         this.vin = vin;
         this.make = make;
         this.model = model;
         this.productionYear = productionYear;
+        this.fuelType = fuelType;
         this.plannedHandoverDate = plannedHandoverDate;
     }
 
@@ -76,6 +84,14 @@ public class Vehicle {
 
     public void setProductionYear(Integer productionYear) {
         this.productionYear = productionYear;
+    }
+
+    public FuelType getFuelType() {
+        return fuelType;
+    }
+
+    public void setFuelType(FuelType fuelType) {
+        this.fuelType = fuelType;
     }
 
     public LocalDate getPlannedHandoverDate() {

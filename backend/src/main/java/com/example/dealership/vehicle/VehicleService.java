@@ -5,6 +5,7 @@ import java.util.List;
 import com.example.dealership.error.ConflictException;
 import com.example.dealership.error.NotFoundException;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,7 +20,7 @@ public class VehicleService {
     }
 
     public List<VehicleResponse> findAll() {
-        return vehicleRepository.findAll().stream()
+        return vehicleRepository.findAll(Sort.by("id")).stream()
                 .map(VehicleMapper::toResponse)
                 .toList();
     }
@@ -44,7 +45,7 @@ public class VehicleService {
             throw vinAlreadyExists(request.vin());
         }
         VehicleMapper.updateEntity(vehicle, request);
-        return VehicleMapper.toResponse(vehicle);
+        return VehicleMapper.toResponse(vehicleRepository.save(vehicle));
     }
 
     @Transactional

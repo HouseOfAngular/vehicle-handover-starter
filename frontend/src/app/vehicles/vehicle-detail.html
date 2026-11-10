@@ -2,8 +2,8 @@
 
 @if (vehicle.isLoading()) {
   <p>Loading…</p>
-} @else if (vehicle.error()) {
-  <p class="error" role="alert">Could not load the vehicle.</p>
+} @else if (vehicle.error(); as error) {
+  <p class="error" role="alert">{{ loadError(error) }}</p>
 } @else if (vehicle.value(); as vehicle) {
   <h1>{{ vehicle.make }} {{ vehicle.model }}</h1>
 
@@ -12,6 +12,8 @@
     <dd>{{ vehicle.vin }}</dd>
     <dt>Production year</dt>
     <dd>{{ vehicle.productionYear }}</dd>
+    <dt>Fuel type</dt>
+    <dd>{{ fuelTypeLabels[vehicle.fuelType] }}</dd>
     <dt>Planned handover</dt>
     <dd>{{ vehicle.plannedHandoverDate ?? '—' }}</dd>
   </dl>

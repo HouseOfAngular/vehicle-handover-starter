@@ -8,9 +8,9 @@
 
 @if (vehicles.isLoading()) {
   <p>Loading…</p>
-} @else if (vehicles.error()) {
-  <p class="error" role="alert">Could not load vehicles.</p>
-} @else {
+} @else if (vehicles.error(); as error) {
+  <p class="error" role="alert">{{ loadError(error) }}</p>
+} @else if (vehicles.value(); as vehicles) {
   <table>
     <thead>
       <tr>
@@ -18,12 +18,13 @@
         <th>Make</th>
         <th>Model</th>
         <th>Production year</th>
+        <th>Fuel type</th>
         <th>Planned handover</th>
         <th>Actions</th>
       </tr>
     </thead>
     <tbody>
-      @for (vehicle of vehicles.value(); track vehicle.id) {
+      @for (vehicle of vehicles; track vehicle.id) {
         <tr>
           <td>
             <a [routerLink]="['/vehicles', vehicle.id]">{{ vehicle.vin }}</a>
@@ -31,6 +32,7 @@
           <td>{{ vehicle.make }}</td>
           <td>{{ vehicle.model }}</td>
           <td>{{ vehicle.productionYear }}</td>
+          <td>{{ fuelTypeLabels[vehicle.fuelType] }}</td>
           <td>{{ vehicle.plannedHandoverDate ?? '—' }}</td>
           <td>
             <a [routerLink]="['/vehicles', vehicle.id, 'edit']">Edit</a>
@@ -39,7 +41,7 @@
         </tr>
       } @empty {
         <tr>
-          <td colspan="6">No vehicles yet.</td>
+          <td colspan="7">No vehicles yet.</td>
         </tr>
       }
     </tbody>

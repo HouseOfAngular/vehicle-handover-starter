@@ -1,0 +1,7 @@
+ALTER TABLE vehicle ADD COLUMN fuel_type VARCHAR(20);
+
+UPDATE vehicle SET fuel_type = 'PETROL' WHERE vin = 'WVWZZZ1KZAW000001';
+UPDATE vehicle SET fuel_type = 'DIESEL' WHERE vin = 'WAUZZZ8V5KA000002';
+UPDATE vehicle SET fuel_type = 'HYBRID' WHERE vin = 'TMBJJ7NE8L0000003';
+
+ALTER TABLE vehicle ALTER COLUMN fuel_type SET NOT NULL;

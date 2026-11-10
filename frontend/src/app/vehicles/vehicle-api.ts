@@ -2,12 +2,24 @@ import { HttpClient, httpResource } from '@angular/common/http';
 import { Injectable, Signal, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
+export type FuelType = 'PETROL' | 'DIESEL' | 'HYBRID' | 'ELECTRIC';
+
+export const FUEL_TYPE_LABELS: Record<FuelType, string> = {
+  PETROL: 'Petrol',
+  DIESEL: 'Diesel',
+  HYBRID: 'Hybrid',
+  ELECTRIC: 'Electric',
+};
+
+export const FUEL_TYPES = Object.keys(FUEL_TYPE_LABELS) as FuelType[];
+
 export interface Vehicle {
   id: number;
   vin: string;
   make: string;
   model: string;
   productionYear: number;
+  fuelType: FuelType;
   plannedHandoverDate: string | null;
 }
 

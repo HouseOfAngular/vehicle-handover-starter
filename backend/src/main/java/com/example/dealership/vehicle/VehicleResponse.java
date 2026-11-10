@@ -8,6 +8,7 @@ public record VehicleResponse(
         String make,
         String model,
         Integer productionYear,
+        FuelType fuelType,
         LocalDate plannedHandoverDate
 ) {
 }

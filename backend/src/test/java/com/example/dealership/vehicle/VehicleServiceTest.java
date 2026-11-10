@@ -19,6 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Sort;
 
 @ExtendWith(MockitoExtension.class)
 class VehicleServiceTest {
@@ -34,7 +35,7 @@ class VehicleServiceTest {
 
     @Test
     void findAllReturnsMappedVehicles() {
-        when(vehicleRepository.findAll()).thenReturn(List.of(vehicle(VIN), vehicle(OTHER_VIN)));
+        when(vehicleRepository.findAll(Sort.by("id"))).thenReturn(List.of(vehicle(VIN), vehicle(OTHER_VIN)));
 
         List<VehicleResponse> responses = vehicleService.findAll();
 
@@ -59,6 +60,7 @@ class VehicleServiceTest {
 
         assertThat(response.vin()).isEqualTo(VIN);
         assertThat(response.make()).isEqualTo("Volkswagen");
+        assertThat(response.fuelType()).isEqualTo(FuelType.PETROL);
         assertThat(response.plannedHandoverDate()).isEqualTo(LocalDate.of(2026, 12, 15));
     }
 
@@ -77,11 +79,13 @@ class VehicleServiceTest {
         Vehicle vehicle = vehicle(VIN);
         when(vehicleRepository.findById(1L)).thenReturn(Optional.of(vehicle));
         when(vehicleRepository.existsByVinAndIdNot(OTHER_VIN, 1L)).thenReturn(false);
+        when(vehicleRepository.save(vehicle)).thenReturn(vehicle);
 
         VehicleResponse response = vehicleService.update(1L, request(OTHER_VIN));
 
         assertThat(response.vin()).isEqualTo(OTHER_VIN);
         assertThat(vehicle.getVin()).isEqualTo(OTHER_VIN);
+        verify(vehicleRepository).save(vehicle);
     }
 
     @Test
@@ -90,7 +94,18 @@ class VehicleServiceTest {
         when(vehicleRepository.existsByVinAndIdNot(OTHER_VIN, 1L)).thenReturn(true);
 
         assertThatThrownBy(() -> vehicleService.update(1L, request(OTHER_VIN)))
-                .isInstanceOf(ConflictException.class);
+                .isInstanceOf(ConflictException.class)
+                .hasMessage("Vehicle with VIN " + OTHER_VIN + " already exists");
+        verify(vehicleRepository, never()).save(any());
+    }
+
+    @Test
+    void updateThrowsNotFoundWhenVehicleDoesNotExist() {
+        when(vehicleRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> vehicleService.update(99L, request(VIN)))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage("Vehicle with id 99 not found");
     }
 
     @Test
@@ -107,14 +122,16 @@ class VehicleServiceTest {
     void deleteThrowsNotFoundWhenVehicleDoesNotExist() {
         when(vehicleRepository.findById(99L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> vehicleService.delete(99L)).isInstanceOf(NotFoundException.class);
+        assertThatThrownBy(() -> vehicleService.delete(99L))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage("Vehicle with id 99 not found");
     }
 
     private static Vehicle vehicle(String vin) {
-        return new Vehicle(vin, "Volkswagen", "Golf", 2025, LocalDate.of(2026, 12, 15));
+        return new Vehicle(vin, "Volkswagen", "Golf", 2025, FuelType.PETROL, LocalDate.of(2026, 12, 15));
     }
 
     private static VehicleRequest request(String vin) {
-        return new VehicleRequest(vin, "Volkswagen", "Golf", 2025, LocalDate.of(2026, 12, 15));
+        return new VehicleRequest(vin, "Volkswagen", "Golf", 2025, FuelType.PETROL, LocalDate.of(2026, 12, 15));
     }
 }

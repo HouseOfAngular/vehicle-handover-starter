@@ -9,7 +9,7 @@ export interface ProblemDetail {
 }
 
 export interface ProblemFieldError {
-  field: string;
+  field: string | null;
   message: string;
 }
 
@@ -19,6 +19,13 @@ export function problemDetailMessage(error: unknown): string {
     return problem?.detail ?? problem?.title ?? error.message;
   }
   return 'Unexpected error';
+}
+
+export function loadErrorMessage(error: unknown, notFoundMessage: string): string {
+  if (error instanceof HttpErrorResponse && error.status === 404) {
+    return notFoundMessage;
+  }
+  return problemDetailMessage(error);
 }
 
 export function problemDetailToFormErrors<T extends object>(
@@ -34,6 +41,6 @@ export function problemDetailToFormErrors<T extends object>(
   return fieldErrors.map(({ field, message }) => ({
     kind: 'server',
     message,
-    fieldTree: fields[field] ?? form,
+    fieldTree: (field === null ? undefined : fields[field]) ?? form,
   }));
 }
