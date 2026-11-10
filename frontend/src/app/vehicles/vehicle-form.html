@@ -1,0 +1,66 @@
+<h1>{{ isEdit() ? 'Edit vehicle' : 'New vehicle' }}</h1>
+
+@if (vehicle.isLoading()) {
+  <p>Loading…</p>
+} @else if (vehicle.error()) {
+  <p class="error" role="alert">Could not load the vehicle.</p>
+} @else {
+  <form [formRoot]="vehicleForm">
+    @for (error of vehicleForm().errors(); track error) {
+      <p class="error" role="alert">{{ error.message }}</p>
+    }
+
+    <label>
+      VIN
+      <input type="text" [formField]="vehicleForm.vin" />
+    </label>
+    @if (vehicleForm.vin().touched()) {
+      @for (error of vehicleForm.vin().errors(); track error) {
+        <p class="error">{{ error.message }}</p>
+      }
+    }
+
+    <label>
+      Make
+      <input type="text" [formField]="vehicleForm.make" />
+    </label>
+    @if (vehicleForm.make().touched()) {
+      @for (error of vehicleForm.make().errors(); track error) {
+        <p class="error">{{ error.message }}</p>
+      }
+    }
+
+    <label>
+      Model
+      <input type="text" [formField]="vehicleForm.model" />
+    </label>
+    @if (vehicleForm.model().touched()) {
+      @for (error of vehicleForm.model().errors(); track error) {
+        <p class="error">{{ error.message }}</p>
+      }
+    }
+
+    <label>
+      Production year
+      <input type="number" [formField]="vehicleForm.productionYear" />
+    </label>
+    @if (vehicleForm.productionYear().touched()) {
+      @for (error of vehicleForm.productionYear().errors(); track error) {
+        <p class="error">{{ error.message }}</p>
+      }
+    }
+
+    <label>
+      Planned handover date
+      <input type="date" [formField]="vehicleForm.plannedHandoverDate" />
+    </label>
+    @if (vehicleForm.plannedHandoverDate().touched()) {
+      @for (error of vehicleForm.plannedHandoverDate().errors(); track error) {
+        <p class="error">{{ error.message }}</p>
+      }
+    }
+
+    <button type="submit" [disabled]="vehicleForm().submitting()">Save</button>
+    <a [routerLink]="isEdit() ? ['/vehicles', id()] : ['/vehicles']">Cancel</a>
+  </form>
+}

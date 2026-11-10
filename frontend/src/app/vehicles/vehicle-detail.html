@@ -1,0 +1,24 @@
+<p><a routerLink="/vehicles">Back to vehicles</a></p>
+
+@if (vehicle.isLoading()) {
+  <p>Loading…</p>
+} @else if (vehicle.error()) {
+  <p class="error" role="alert">Could not load the vehicle.</p>
+} @else if (vehicle.value(); as vehicle) {
+  <h1>{{ vehicle.make }} {{ vehicle.model }}</h1>
+
+  <dl>
+    <dt>VIN</dt>
+    <dd>{{ vehicle.vin }}</dd>
+    <dt>Production year</dt>
+    <dd>{{ vehicle.productionYear }}</dd>
+    <dt>Planned handover</dt>
+    <dd>{{ vehicle.plannedHandoverDate ?? '—' }}</dd>
+  </dl>
+
+  <p><a [routerLink]="['/vehicles', vehicle.id, 'edit']">Edit</a></p>
+
+  <section>
+    <h2>Documents</h2>
+  </section>
+}

@@ -1,0 +1,39 @@
+body {
+  margin: 0 auto;
+  max-width: 60rem;
+  padding: 1rem;
+  font-family: system-ui, sans-serif;
+}
+
+nav a.active {
+  font-weight: bold;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 0.5rem;
+  border-bottom: 1px solid #ccc;
+  text-align: left;
+}
+
+label {
+  display: block;
+  margin-top: 1rem;
+}
+
+label input {
+  display: block;
+}
+
+button[type='submit'] {
+  margin: 1rem 1rem 0 0;
+}
+
+.error {
+  color: #b00020;
+}
