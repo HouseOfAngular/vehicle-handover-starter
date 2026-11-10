@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -108,6 +109,21 @@ class VehicleControllerTest {
                 .andExpect(jsonPath("$.errors[1].field").value("productionYear"))
                 .andExpect(jsonPath("$.errors[1].message").value("must be between 1990 and next year"))
                 .andExpect(jsonPath("$.errors[2].field").value("vin"));
+        verifyNoInteractions(vehicleService);
+    }
+
+    @Test
+    void createReturnsEnglishValidationMessagesWhenAcceptLanguageIsPolish() throws Exception {
+        String body = VALID_BODY.replace("Volkswagen", " ");
+
+        mockMvc.perform(post("/api/vehicles")
+                        .header(HttpHeaders.ACCEPT_LANGUAGE, "pl")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.length()").value(1))
+                .andExpect(jsonPath("$.errors[0].field").value("make"))
+                .andExpect(jsonPath("$.errors[0].message").value("must not be blank"));
         verifyNoInteractions(vehicleService);
     }
 
