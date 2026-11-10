@@ -3,6 +3,8 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
+source ./check-node.sh
+
 if [ ! -d frontend/node_modules ]; then
   (cd frontend && npm ci)
 fi

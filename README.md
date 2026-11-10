@@ -7,6 +7,10 @@ Spring Boot backend and Angular frontend.
 - JDK 21
 - Node.js 22.22.3 or newer 22.x (or 24.15+), with npm
 
+`./run.sh` and `./test.sh` check the Node.js version first and stop with an error if it is
+not supported. With nvm, `nvm install && nvm use` in the repository root picks the version
+from `.nvmrc`.
+
 Maven is not required: the backend uses the Maven wrapper.
 
 ## Running
@@ -28,4 +32,5 @@ Stop both applications with `Ctrl+C`.
 ```
 
 Runs the backend tests (`./mvnw test` in `backend/`) and the frontend tests
-(`npm test` in `frontend/`). The script exits with a non-zero code if any test fails.
+(`npm test` in `frontend/`). Both parts always run and a summary of both is printed at the
+end. The script exits with a non-zero code if any test fails.
