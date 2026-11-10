@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
-import { problemDetailMessage } from '../shared/problem-detail';
+import { loadErrorMessage, problemDetailMessage } from '../shared/problem-detail';
 import { FUEL_TYPE_LABELS, Vehicle, VehicleApi } from './vehicle-api';
 
 @Component({
@@ -17,7 +17,7 @@ export class VehicleList {
   protected readonly deleteError = signal<string | null>(null);
 
   protected loadError(error: unknown): string {
-    return problemDetailMessage(error);
+    return loadErrorMessage(error, 'Vehicles not found');
   }
 
   protected async delete(vehicle: Vehicle): Promise<void> {

@@ -4,7 +4,7 @@
   <p>Loading…</p>
 } @else if (vehicle.error(); as error) {
   <p class="error" role="alert">{{ loadError(error) }}</p>
-} @else {
+} @else if (!isEdit() || vehicle.hasValue()) {
   <form [formRoot]="vehicleForm">
     @for (error of vehicleForm().errors(); track error) {
       <p class="error" role="alert">{{ error.message }}</p>

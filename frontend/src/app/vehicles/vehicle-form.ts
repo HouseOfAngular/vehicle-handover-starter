@@ -1,8 +1,9 @@
-import { Component, computed, inject, input, linkedSignal, numberAttribute } from '@angular/core';
+import { Component, computed, inject, input, linkedSignal } from '@angular/core';
 import { FormField, FormRoot, form, required } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { loadErrorMessage, problemDetailToFormErrors } from '../shared/problem-detail';
+import { optionalNumberAttribute } from '../shared/route-params';
 import {
   FUEL_TYPES,
   FUEL_TYPE_LABELS,
@@ -52,10 +53,7 @@ export class VehicleForm {
   private readonly vehicleApi = inject(VehicleApi);
   private readonly router = inject(Router);
 
-  readonly id = input(undefined, {
-    transform: (value: string | undefined) =>
-      value === undefined ? undefined : numberAttribute(value),
-  });
+  readonly id = input(undefined, { transform: optionalNumberAttribute });
 
   protected readonly isEdit = computed(() => this.id() !== undefined);
   protected readonly vehicle = this.vehicleApi.get(this.id);

@@ -183,6 +183,18 @@ class VehicleControllerTest {
     }
 
     @Test
+    void updateReturnsNotFoundProblemWhenVehicleDoesNotExist() throws Exception {
+        when(vehicleService.update(eq(99L), any(VehicleRequest.class)))
+                .thenThrow(new NotFoundException("Vehicle with id 99 not found"));
+
+        mockMvc.perform(put("/api/vehicles/99").contentType(MediaType.APPLICATION_JSON).content(VALID_BODY))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.detail").value("Vehicle with id 99 not found"));
+    }
+
+    @Test
     void updateReturnsBadRequestProblemWithFieldErrorsWhenRequestIsInvalid() throws Exception {
         mockMvc.perform(put("/api/vehicles/1").contentType(MediaType.APPLICATION_JSON).content(invalidBody()))
                 .andExpect(status().isBadRequest())
@@ -222,7 +234,9 @@ class VehicleControllerTest {
 
         mockMvc.perform(delete("/api/vehicles/99"))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.status").value(404));
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.detail").value("Vehicle with id 99 not found"));
     }
 
     private static String invalidBody() {

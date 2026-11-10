@@ -35,6 +35,7 @@ export function problemDetailToFormErrors<T extends object>(
   const fieldErrors =
     error instanceof HttpErrorResponse ? (error.error as ProblemDetail | null)?.errors : undefined;
   if (!fieldErrors?.length) {
+    // A 409 conflict carries no field errors: it is an error of the whole form, not of a field.
     return [{ kind: 'server', message: problemDetailMessage(error), fieldTree: form }];
   }
   const fields = form as unknown as Record<string, FieldTree<unknown> | undefined>;
