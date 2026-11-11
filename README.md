@@ -15,7 +15,8 @@ in, and the transcript of the client meeting the requirements come from.
 4. Do the task in the order of the deliverables listed in the brief, committing as you go.
 5. Before handing in, make sure `./test.sh` passes.
 
-Keep your solution private: do not push it to a public repository or a public fork.
+To hand the work in, push it to a public GitHub repository of your own (a fork of this one is
+fine) and send us the link.
 
 ## Requirements
 
