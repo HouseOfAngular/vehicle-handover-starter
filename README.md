@@ -2,6 +2,21 @@
 
 Spring Boot backend and Angular frontend.
 
+## Recruitment task
+
+This repository is the starting point of a recruitment task. The task itself (in Polish)
+is in [BRIEF.md](BRIEF.md): what to deliver, the API contract to keep, how to hand the work
+in, and the transcript of the client meeting the requirements come from.
+
+1. Check the requirements below and run `./test.sh`. It should pass before you change anything.
+2. Read `BRIEF.md` in full, including the meeting transcript at the end.
+3. Look at the vehicle module (`backend/.../vehicle/`, `frontend/src/app/vehicles/`). It shows
+   how code is written in this project, and your work should follow it.
+4. Do the task in the order of the deliverables listed in the brief, committing as you go.
+5. Before handing in, make sure `./test.sh` passes.
+
+Keep your solution private: do not push it to a public repository or a public fork.
+
 ## Requirements
 
 - JDK 21
